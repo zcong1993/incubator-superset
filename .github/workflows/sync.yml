@@ -1,9 +1,6 @@
 name: Sync Fork
 
-on:
-  - push
-  - schedule:
-    - cron:  "*/15 * * * *"
+on: [push]
 jobs:
   repo-sync:
     runs-on: ubuntu-latest
