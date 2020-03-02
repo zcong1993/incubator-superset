@@ -2675,6 +2675,7 @@ class Superset(BaseSupersetView):
             df = query.database.get_df(sql, query.schema)
             # TODO(bkyryliuk): add compression=gzip for big files.
             csv = df.to_csv(index=False, **config.get("CSV_EXPORT"))
+        # csv = csv.encode(config.get('CSV_EXPORT')['encoding'])
         response = Response(csv, mimetype="text/csv")
         response.headers[
             "Content-Disposition"
