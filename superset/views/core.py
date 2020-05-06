@@ -2677,9 +2677,17 @@ class Superset(BaseSupersetView):
             csv = df.to_csv(index=False, **config.get("CSV_EXPORT"))
         # csv = csv.encode(config.get('CSV_EXPORT')['encoding'])
         response = Response(csv, mimetype="text/csv")
-        response.headers[
-            "Content-Disposition"
-        ] = f"attachment; filename={query.name}.csv"
+        # response.headers[
+        #     "Content-Disposition"
+        # ] = f"attachment; filename={query.name}.csv"
+        filename = f"{query.name}.csv"
+        response.headers["Content-Disposition"] = \
+            "attachment; " \
+            "filenane={ascii_filename};" \
+            "filename*=UTF-8''{utf_filename}".format(
+                ascii_filename=parse.quote(filename),
+                utf_filename=parse.quote(filename)
+            )
         logging.info("Ready to return response")
         return response
 
