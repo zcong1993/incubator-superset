@@ -2506,9 +2506,17 @@ class Superset(BaseSupersetView):
             # TODO(bkyryliuk): add compression=gzip for big files.
             csv = df.to_csv(index=False, **config["CSV_EXPORT"])
         response = Response(csv, mimetype="text/csv")
-        response.headers[
-            "Content-Disposition"
-        ] = f"attachment; filename={query.name}.csv"
+        # response.headers[
+        #     "Content-Disposition"
+        # ] = f"attachment; filename={query.name}.csv"
+        filename = f"{query.name}.csv"
+        response.headers["Content-Disposition"] = \
+            "attachment; " \
+            "filenane={ascii_filename};" \
+            "filename*=UTF-8''{utf_filename}".format(
+                ascii_filename=parse.quote(filename),
+                utf_filename=parse.quote(filename)
+            )
         event_info = {
             "event_type": "data_export",
             "client_id": client_id,
