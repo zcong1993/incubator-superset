@@ -345,7 +345,7 @@ ALLOWED_EXTENSIONS = {"csv", "tsv"}
 # CSV Options: key/value pairs that will be passed as argument to DataFrame.to_csv
 # method.
 # note: index option should not be overridden
-CSV_EXPORT = {"encoding": "utf-8-sig"}
+CSV_EXPORT = {"encoding": "utf_8_sig"}
 
 # ---------------------------------------------------
 # Time grain configurations
