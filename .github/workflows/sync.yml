@@ -3,16 +3,14 @@ name: Sync Fork
 on:
   push:
   schedule:
-    - cron:  "*/15 * * * *"
+    - cron:  "0 0 * * *"
 jobs:
   repo-sync:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-    - name: repo-sync
-      uses: repo-sync/github-sync@v2
+    - uses: TG908/fork-sync@v1.1
       with:
-        source_repo: "apache/incubator-superset"
-        source_branch: "0.36"
-        destination_branch: "source-0.36"
         github_token: ${{ secrets.GITHUB_TOKEN }}
+        owner: apache
+        base: source-0.36
+        head: 0.36
