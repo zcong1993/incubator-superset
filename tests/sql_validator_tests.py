@@ -14,12 +14,15 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+# isort:skip_file
 """Unit tests for Sql Lab"""
 import unittest
 from unittest.mock import MagicMock, patch
 
+import pytest
 from pyhive.exc import DatabaseError
 
+import tests.test_app
 from superset import app
 from superset.sql_validators import SQLValidationAnnotation
 from superset.sql_validators.base import BaseSQLValidator
@@ -27,6 +30,8 @@ from superset.sql_validators.presto_db import (
     PrestoDBSQLValidator,
     PrestoSQLValidationError,
 )
+from superset.utils.core import get_example_database
+
 from .base_tests import SupersetTestCase
 
 PRESTO_TEST_FEATURE_FLAGS = {
@@ -39,7 +44,7 @@ PRESTO_TEST_FEATURE_FLAGS = {
 }
 
 
-class SqlValidatorEndpointTests(SupersetTestCase):
+class TestSqlValidatorEndpoint(SupersetTestCase):
     """Testing for Sql Lab querytext validation endpoint"""
 
     def tearDown(self):
@@ -59,10 +64,16 @@ class SqlValidatorEndpointTests(SupersetTestCase):
         self.assertIn("no SQL validator is configured", resp["error"])
 
     @patch("superset.views.core.get_validator_by_name")
-    @patch.dict("superset._feature_flags", PRESTO_TEST_FEATURE_FLAGS, clear=True)
+    @patch.dict(
+        "superset.extensions.feature_flag_manager._feature_flags",
+        PRESTO_TEST_FEATURE_FLAGS,
+        clear=True,
+    )
     def test_validate_sql_endpoint_mocked(self, get_validator_by_name):
         """Assert that, with a mocked validator, annotations make it back out
         from the validate_sql_json endpoint as a list of json dictionaries"""
+        if get_example_database().backend == "hive":
+            pytest.skip("Hive validator is not implemented")
         self.login("admin")
 
         validator = MagicMock()
@@ -86,7 +97,11 @@ class SqlValidatorEndpointTests(SupersetTestCase):
         self.assertIn("expected,", resp[0]["message"])
 
     @patch("superset.views.core.get_validator_by_name")
-    @patch.dict("superset._feature_flags", PRESTO_TEST_FEATURE_FLAGS, clear=True)
+    @patch.dict(
+        "superset.extensions.feature_flag_manager._feature_flags",
+        PRESTO_TEST_FEATURE_FLAGS,
+        clear=True,
+    )
     def test_validate_sql_endpoint_failure(self, get_validator_by_name):
         """Assert that validate_sql_json errors out when the selected validator
         raises an unexpected exception"""
@@ -99,11 +114,15 @@ class SqlValidatorEndpointTests(SupersetTestCase):
         resp = self.validate_sql(
             "SELECT * FROM birth_names", client_id="1", raise_on_error=False
         )
-        self.assertIn("error", resp)
-        self.assertIn("Kaboom!", resp["error"])
+        # TODO(bkyryliuk): properly handle hive error
+        if get_example_database().backend == "hive":
+            assert resp["error"] == "no SQL validator is configured for hive"
+        else:
+            self.assertIn("error", resp)
+            self.assertIn("Kaboom!", resp["error"])
 
 
-class BaseValidatorTests(SupersetTestCase):
+class TestBaseValidator(SupersetTestCase):
     """Testing for the base sql validator"""
 
     def setUp(self):
@@ -114,12 +133,12 @@ class BaseValidatorTests(SupersetTestCase):
             self.validator.validate(None, None, None)
 
 
-class PrestoValidatorTests(SupersetTestCase):
+class TestPrestoValidator(SupersetTestCase):
     """Testing for the prestodb sql validator"""
 
     def setUp(self):
         self.validator = PrestoDBSQLValidator
-        self.database = MagicMock()  # noqa
+        self.database = MagicMock()
         self.database_engine = self.database.get_sqla_engine.return_value
         self.database_conn = self.database_engine.raw_connection.return_value
         self.database_cursor = self.database_conn.cursor.return_value
