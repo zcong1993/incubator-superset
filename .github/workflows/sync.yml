@@ -1,16 +1,17 @@
 name: Sync Fork
 
 on:
-  push:
-  schedule:
-    - cron:  "0 0 * * *"
+  workflow_dispatch
+#   push:
+#   schedule:
+#     - cron:  "0 0 * * *"
 jobs:
   repo-sync:
     runs-on: ubuntu-latest
     steps:
-    - uses: TG908/fork-sync@v1.1
+    - uses: TG908/fork-sync@v1.3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         owner: apache
-        base: source-0.36
-        head: 0.36
+        base: master
+        head: master
