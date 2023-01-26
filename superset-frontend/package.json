@@ -192,7 +192,7 @@
     "react-ultimate-pagination": "^1.2.0",
     "react-virtualized": "9.19.1",
     "react-window": "^1.8.8",
-    "redux": "^4.0.5",
+    "redux": "^4.2.0",
     "redux-localstorage": "^0.4.1",
     "redux-thunk": "^2.1.0",
     "redux-undo": "^1.0.0-beta9-9-7",
